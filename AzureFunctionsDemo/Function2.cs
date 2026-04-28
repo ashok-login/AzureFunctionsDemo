@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AzureFunctionsDemo;
@@ -8,10 +9,12 @@ namespace AzureFunctionsDemo;
 public class Function2
 {
     private readonly ILogger<Function2> _logger;
+    private readonly IConfiguration _configuration;
 
-    public Function2(ILogger<Function2> logger)
+    public Function2(ILogger<Function2> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
     [Function("GetAllUsers")]
@@ -26,5 +29,12 @@ public class Function2
     {
         var externalServiceURL = Environment.GetEnvironmentVariable("SomeExternalService");
         return new OkObjectResult(externalServiceURL);
+    }
+
+    [Function("WorkWithSQLDbConnectionString")]
+    public IActionResult WorkWithSQLDbConnectionString([HttpTrigger(AuthorizationLevel.Function, "get", Route = "connectionstrings/getsqlconnecgtionstring")]HttpRequest req)
+    {
+        var connectionString = _configuration.GetConnectionString("SqlConnectionString");
+        return new OkObjectResult(connectionString);
     }
 }
